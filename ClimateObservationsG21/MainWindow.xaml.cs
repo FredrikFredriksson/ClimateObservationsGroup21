@@ -33,10 +33,63 @@ namespace ClimateObservationsG21
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            var category = co.GetCategory(12);
 
-            MessageBox.Show($"{category}");
+            try
+            {
+                co.RemoveObserver(8);
+            }
+            catch (Exception ex)
+            {
+
+                MessageBox.Show(ex.Message);
+            }
+
+            
+
+            //var category = co.GetCategory(5);
+
+            //MessageBox.Show($"{category}");
+
+            //var observers = co.GetObservers();
+
+
+            //try
+            //{
+            //Observer observer = new Observer
+            //{
+            //    FirstName = "Nicklas",
+            //    LastName = "Mellqvist"
+            //    };
+
+            //    observer = co.AddObserver(observer);
+            //}
+            //catch (Exception ex)
+            //{
+
+            //    MessageBox.Show(ex.Message);
+            //}
+
+
+            //lstBox.ItemsSource = observers;
+
+
+            
+            
+
 
         }
+
+        /*
+               peak = new Peak
+               {
+                   PeakName = "Aconcagua",
+                   RangeId = 1
+               };//inget peakid här för att vi behöver låta db bestämma detta ju
+
+               peak = db.AddPeak(peak);//FUNKADE! Lillsjöhögen är med!
+               */
+
+
     }
+
 }

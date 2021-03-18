@@ -8,6 +8,7 @@
         Title="MainWindow" Height="450" Width="800">
     <Grid>
         <Button Content="Button" HorizontalAlignment="Left" Margin="400,115,0,0" VerticalAlignment="Top" Click="Button_Click"/>
+        <ListBox x:Name="lstBox" Margin="46,54,500,187"/>
 
     </Grid>
 </Window>
