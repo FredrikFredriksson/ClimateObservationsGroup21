@@ -4,9 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ClimateObservationsG21.Models
+namespace ClimateObservationsG21
 {
-    class Measurement
+    public class Measurement
     {
+        public int Id { get; set; }
+        public float? Value { get; set; }
+        public int CategoryID { get; set; }
+        public int ObservationId { get; set; }
     }
 }

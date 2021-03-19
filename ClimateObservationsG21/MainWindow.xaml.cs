@@ -34,34 +34,42 @@ namespace ClimateObservationsG21
         private void Button_Click(object sender, RoutedEventArgs e)
         {
 
-            try
-            {
-                co.RemoveObserver(8);
-            }
-            catch (Exception ex)
-            {
+            Measurement measurement = new Measurement();
 
-                MessageBox.Show(ex.Message);
-            }
+            Observation observation = new Observation();
+
+            observation = co.GetObservation(3);
+
+
+            measurement = co.GetMeasurement(observation);
 
             
 
-            //var category = co.GetCategory(5);
 
-            //MessageBox.Show($"{category}");
+            //var listOfObservations = co.GetObservations();
 
-            //var observers = co.GetObservers();
+            //lstBox.ItemsSource = listOfObservations;
+           
+
+            // varg är categori 5, vinterpäls är kategori 12 som är underkategori till varg (5).
+
+
+
+            //
+            //Ange värde: "2" Measurement.Value = 2, Ange kategori: Varg - category.Id 5, Ange päls: Vinterpäls - category-Id = 12 category.Basecategory = 5
+
+
+
+
+
+
+
+            //co.SetMeasurement(2, 2, 10);
 
 
             //try
             //{
-            //Observer observer = new Observer
-            //{
-            //    FirstName = "Nicklas",
-            //    LastName = "Mellqvist"
-            //    };
-
-            //    observer = co.AddObserver(observer);
+            //    co.RemoveObserver(8);
             //}
             //catch (Exception ex)
             //{
@@ -70,11 +78,36 @@ namespace ClimateObservationsG21
             //}
 
 
-            //lstBox.ItemsSource = observers;
+
+            ////var category = co.GetCategory(5);
+
+            ////MessageBox.Show($"{category}");
+
+            ////var observers = co.GetObservers();
 
 
-            
-            
+            ////try
+            ////{
+            ////Observer observer = new Observer
+            ////{
+            ////    FirstName = "Nicklas",
+            ////    LastName = "Mellqvist"
+            ////    };
+
+            ////    observer = co.AddObserver(observer);
+            ////}
+            ////catch (Exception ex)
+            ////{
+
+            ////    MessageBox.Show(ex.Message);
+            ////}
+
+
+            ////lstBox.ItemsSource = observers;
+
+
+
+
 
 
         }

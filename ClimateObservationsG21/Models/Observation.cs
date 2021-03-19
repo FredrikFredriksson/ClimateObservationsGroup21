@@ -6,7 +6,14 @@ using System.Threading.Tasks;
 
 namespace ClimateObservationsG21
 {
-    class Observation
+    public class Observation
     {
+        public int Id { get; set; }
+        public DateTime Date { get; set; }
+        public int ObserverId { get; set; }
+
+        public int GeolocationId { get; set; }
+
+        
     }
 }

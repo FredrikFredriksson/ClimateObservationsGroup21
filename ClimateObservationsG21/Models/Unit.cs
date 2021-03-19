@@ -6,7 +6,10 @@ using System.Threading.Tasks;
 
 namespace ClimateObservationsG21.Models
 {
-    class Unit
+    public class Unit
     {
+        public int Id { get; set; }
+        public string Type { get; set; }
+        public string Abbreviation { get; set; }
     }
 }
