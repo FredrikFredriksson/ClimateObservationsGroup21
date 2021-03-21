@@ -14,6 +14,10 @@ namespace ClimateObservationsG21
 
         public int GeolocationId { get; set; }
 
-        
+
+        public override string ToString()
+        {
+            return Date.ToString();
+        }
     }
 }

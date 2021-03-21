@@ -5,10 +5,62 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ClimateObservationsG21"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="900" Width="1700">
     <Grid>
-        <Button Content="Button" HorizontalAlignment="Left" Margin="400,115,0,0" VerticalAlignment="Top" Click="Button_Click"/>
-        <ListBox x:Name="lstBox" Margin="46,54,500,187"/>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="0*"/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <ListBox x:Name ="lstboxObservers" Grid.ColumnSpan="2" Margin="88,34,1229,442" SelectionChanged="lstboxObservers_SelectionChanged"/>
+        <Button x:Name ="btnAddObserver"  Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="543,186,0,0" VerticalAlignment="Top" Height="35" Width="158" Content="Lägg till observatör" Click="btnAddObserver_Click" RenderTransformOrigin="0.36,1.017">
+
+        </Button>
+        <Button x:Name ="btnRemoveObserver"  Content="Ta bort observatör" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="543,253,0,0" VerticalAlignment="Top" Height="34" Width="138" Click="btnRemoveObserver_Click"/>
+        <Button x:Name = "btnAddObservation" Content="Lägg till observation " Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="1444,300,0,0" VerticalAlignment="Top" Height="24" Width="178"/>
+        <ComboBox x:Name = "comboboxCountry" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="953,129,0,0" VerticalAlignment="Top" Width="240" Height="38"/>
+        <Label x:Name ="lblChooseCountry" Content="Välj land" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="953,92,0,0" VerticalAlignment="Top" Width="157"/>
+        <ComboBox x:Name="comboboxArea" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="953,208,0,0" VerticalAlignment="Top" Width="200" Height="39"/>
+        <Label x:Name ="lblChooseArea" Content="Välj plats" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="953,177,0,0" VerticalAlignment="Top"/>
+        <ListBox x:Name ="lstboxObservations"  Grid.ColumnSpan="2" Margin="103,475,1380,131" SelectionChanged="lstboxObservations_SelectionChanged"/>
+        <Label x:Name ="lblChooseCategory" Content="Välj kategori" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="1156,511,0,0" VerticalAlignment="Top"/>
+        <ComboBox x:Name ="comboboxCategory"  Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="1151,542,0,0" VerticalAlignment="Top" Width="120"/>
+        <TextBox Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="1330,632,0,0" Text="TextBox" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
+        <Label x:Name ="lblCount"  Content="Antal" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="1330,601,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.141,0.483"/>
+        <ComboBox x:Name ="comboboxSubCategory1"  Grid.Column="1" HorizontalAlignment="Left" Margin="1151,619,0,0" VerticalAlignment="Top" Width="120"/>
+        <Label x:Name ="lblChooseSubCategory1"  Content="Välj underkategori 1" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="1151,588,0,0" VerticalAlignment="Top" Width="120"/>
+        <ComboBox x:Name ="comboboxSubCategory2"  Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="1151,686,0,0" VerticalAlignment="Top" Width="120"/>
+        <Label x:Name ="lblChooseSubCategory2"  Content="Välj underkategori 2" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="1151,655,0,0" VerticalAlignment="Top" Width="128"/>
+        <Button x:Name ="btnSaveToObservation"  Content="Spara till vald observation" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="1481,601,0,0" VerticalAlignment="Top" Height="55" Width="184"/>
+        <Button x:Name ="btnShowInfoObservation"  Content="Visa information om den valda observationen" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="1330,413,0,0" VerticalAlignment="Top" Height="48" Width="268"/>
+        <TextBox x:Name ="txtNewValueInsert"  Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="930,559,0,0" Text="TextBox" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
+        <Label x:Name ="lblNewValue"  Content="Fyll i nytt värde" HorizontalAlignment="Left" Margin="930,506,0,0" VerticalAlignment="Top" Width="104" Grid.Column="1"/>
+        <ListBox x:Name="lstBoxListOfMeasurements" Grid.ColumnSpan="2" Margin="337,479,1188,130" RenderTransformOrigin="0.5,0.5" SelectionChanged="lstBoxListOfMeasurements_SelectionChanged">
+            <ListBox.RenderTransform>
+                <TransformGroup>
+                    <ScaleTransform/>
+                    <SkewTransform/>
+                    <RotateTransform Angle="-0.839"/>
+                    <TranslateTransform/>
+                </TransformGroup>
+            </ListBox.RenderTransform>
+        </ListBox>
+        <TextBox x:Name="txtBoxFirstName" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="543,74,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
+        <TextBox x:Name="txtBoxLastName" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="543,129,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
+        <Label x:Name ="lblFirstname" Content="Förnamn" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="543,43,0,0" VerticalAlignment="Top"/>
+        <Label x:Name ="lblLastname" Content="Efternamn" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="543,105,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.313,0.432"/>
+        <Label x:Name="lblAbbreviation" Content="Label" HorizontalAlignment="Left" Margin="1073,373,0,0" VerticalAlignment="Top" Width="84" Grid.Column="1"/>
+        <ListBox x:Name="lstBoxCategory" Grid.ColumnSpan="2" Margin="543,481,1026,138" SelectionChanged="lstBoxCategory_SelectionChanged"/>
+        <ListBox x:Name="lstBoxUnit" Grid.ColumnSpan="2" Margin="694,481,911,164"/>
+
+
+
+
+
+
+
+
+
+
 
     </Grid>
 </Window>

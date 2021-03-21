@@ -18,7 +18,7 @@ namespace ClimateObservationsG21
 
         public override string ToString()
         {
-            return ($"{Name}, {BaseCategoryId}, {UnitId}");
+            return Name;
         }
     }
 }

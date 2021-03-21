@@ -12,5 +12,10 @@ namespace ClimateObservationsG21
         public float? Value { get; set; }
         public int CategoryID { get; set; }
         public int ObservationId { get; set; }
+
+        public override string ToString()
+        {
+            return Value.ToString();
+        }
     }
 }
