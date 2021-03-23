@@ -6,17 +6,12 @@ using System.Threading.Tasks;
 
 namespace ClimateObservationsG21
 {
-    public class Category
+    public class Area
     {
         public int Id { get; set; }
-
-        public string? Name { get; set; }
-
-        public int? BaseCategoryId { get; set; }
-
-        public int? UnitId { get; set; }
-        public Unit Unit { get; set; }
-
+        public string Name { get; set; }
+        public int CountryId { get; set; }
+        public Country Country { get; set; }
 
         public override string ToString()
         {

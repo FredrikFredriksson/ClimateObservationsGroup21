@@ -11,13 +11,18 @@ namespace ClimateObservationsG21
         public int Id { get; set; }
         public DateTime Date { get; set; }
         public int ObserverId { get; set; }
-
+        public Observer Observer { get; set; }
         public int GeolocationId { get; set; }
-
+        
+        
 
         public override string ToString()
         {
             return Date.ToString();
         }
+
+
+       
+
     }
 }

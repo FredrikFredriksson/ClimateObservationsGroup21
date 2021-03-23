@@ -1,9 +1,6 @@
-﻿using System;
+﻿using Npgsql;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Npgsql;
 
 
 namespace ClimateObservationsG21
@@ -12,147 +9,121 @@ namespace ClimateObservationsG21
     {
         private static readonly string connectionString = "Server=localhost;Port=5432;Database=Climate_Observations_G21; User ID= fredrik; Password=Hemligt";
 
+
+
         #region Get Methods
 
-
-        /// <summary>
-        /// Gets a category from database
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns>category</returns>
-        public Category GetCategory(int id)
+        public void AddViewModelToDatabase(NewObservationViewModel vm)
         {
-            string statement = "select * from category where id = @id";
+            string statement = "insert into observation (geolocation_id, date, observer_id) values (@gId, @date, @oId) returning id"; //insert-fråga del 1. Vad vill vi returnera?
+
             using var connection = new NpgsqlConnection(connectionString);
-
             connection.Open();
-
+            var transaction = connection.BeginTransaction();//transaktionen börjar
             using var command = new NpgsqlCommand(statement, connection);
-            command.Parameters.AddWithValue("id", id);
 
-            using var reader = command.ExecuteReader();
+            command.Parameters.AddWithValue("gId", vm.GeolocationId);
+            command.Parameters.AddWithValue("date", vm.Date);
+            command.Parameters.AddWithValue("oId", vm.Observer.Id);
 
-            Category category = null;
+            int observationId = (int)command.ExecuteScalar();
 
-            while (reader.Read())
+            transaction.Commit();
+
+            for (int i = 0; i < vm.Measurements.Count; i++)
             {
-                category = new Category
-                {
-                    Id = (int)reader["id"],
-                    Name = Convert.IsDBNull(reader["name"]) ? null : (string?)reader["name"],
-                    BaseCategoryId = Convert.IsDBNull(reader["basecategory_id"]) ? null : (int?)reader["basecategory_id"],
-                    UnitId = Convert.IsDBNull(reader["unit_id"]) ? null : (int?)reader["unit_id"]
-                };
-                
+                AddMeasurement(vm.Measurements[i], observationId);
             }
-            return category;
         }
 
-        /// <summary>
-        /// Gets an observer from database
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns>observer</returns>
-        public Observer GetObserver(int id)
+        public NewObservationViewModel GetViewModel(Observation observation)
         {
-            string statement = "select * from observer where id = @id";
+
+            string statement = "SELECT measurement.id as \"mId\", measurement.value as \"mValue\", category.id as \"cId\", category.name as \"cName\", unit.id as \"uId\", unit.type as \"uType\", unit.abbreviation as \"uAb\" FROM measurement LEFT JOIN category on category_id = category.id LEFT JOIN unit on unit_id = unit.id WHERE measurement.observation_id = @observationId";
+            //  unit.id as \"uId\", unit.type as \"uType\" unit.abbreviation as \"uAb\" LEFT JOIN unit on unit_id = unit.id 
+
+
             using var connection = new NpgsqlConnection(connectionString);
-
             connection.Open();
-
             using var command = new NpgsqlCommand(statement, connection);
-
-
-            command.Parameters.AddWithValue("id", id);
-
-            using var reader = command.ExecuteReader();
-
-            Observer observer = null;
-
-            while (reader.Read())
-            {
-                observer = new Observer
-
-
-                {
-                    Id = (int)reader["id"],
-                    FirstName = (string)reader["firstname"],
-                    LastName = (string)reader["lastname"]
-                };
-
-            }
-
-            return observer;
-        }
-
-        /// <summary>
-        /// Gets an observation from database
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns>observation</returns>
-        //public Observation GetObservation(Observer observer)
-        //{
-        //    string statement = "select * from observation where id = @id";
-        //    using var connection = new NpgsqlConnection(connectionString);
-
-        //    connection.Open();
-
-        //    using var command = new NpgsqlCommand(statement, connection);
-        //    command.Parameters.AddWithValue("id", id);
-
-        //    using var reader = command.ExecuteReader();
-
-        //    Observation observation = null;
-
-        //    while (reader.Read())
-        //    {
-        //        observation = new Observation
-        //        {
-        //            Id = (int)reader["id"],
-        //            Date = (DateTime)reader["date"],
-        //            ObserverId = (int)reader["observer_id"],
-        //            GeolocationId = (int)reader["geolocation_id"]
-        //        };
-
-        //    }
-        //    return observation;
-        //}
-
-        /// <summary>
-        /// Gets a measurement from database
-        /// </summary>
-        /// <param name="observation"></param>
-        /// <returns>measurement</returns>
-        public Measurement GetMeasurement(Observation observation)
-        {
-            string statement = "select * from measurement where observation_id = @observationId";
-            using var connection = new NpgsqlConnection(connectionString);
-
-            connection.Open();
-
-            using var command = new NpgsqlCommand(statement, connection);
-
-
             command.Parameters.AddWithValue("observationId", observation.Id);
 
             using var reader = command.ExecuteReader();
 
+
+            Category category = null;
+            Unit unit = null;
             Measurement measurement = null;
+            NewObservationViewModel vm = new NewObservationViewModel();
+
+
 
             while (reader.Read())
             {
+                measurement = null;
+
+
+                unit = new Unit
+                {
+                    Id = (int)reader["uId"],
+                    Type = (string)reader["uType"],
+                    Abbreviation = (string)reader["uAb"]
+                };
+
+                category = new Category
+                {
+                    Id = (int)reader["cId"],
+                    Name = (string)reader["cName"],
+                    UnitId = unit.Id,
+                    Unit = unit
+
+                };
+
                 measurement = new Measurement
                 {
-                    Id = (int)reader["id"],
-                    Value = Convert.IsDBNull(reader["value"]) ? null : Convert.ToSingle(reader["value"]), //Ta reda på varför convert to single
-                    CategoryID = (int)reader["category_id"],
-                    ObservationId = (int)reader["observation_id"]
+                    Id = (int)reader["mId"],
+                    Category = category,
+                    CategoryId = category.Id,
+                    Value = Convert.IsDBNull(reader["mValue"]) ? null : Convert.ToSingle(reader["mValue"]),
+                    ObservationId = observation.Id,
+                    Observation = observation
                 };
-                
+
+                vm.Measurements.Add(measurement);
+
             }
 
-            return measurement;
+            return vm;
+        }
 
+        public Unit GetUnit(Category category)
+        {
+            string statement = "select * from unit where id = @unitId";
+            using var connection = new NpgsqlConnection(connectionString);
+
+            connection.Open();
+
+            using var command = new NpgsqlCommand(statement, connection);
+
+
+            command.Parameters.AddWithValue("unitId", category.UnitId);
+
+            using var reader = command.ExecuteReader();
+
+            Unit unit = null;
+
+            while (reader.Read())
+            {
+                unit = new Unit
+                {
+                    Id = (int)reader["id"],
+                    Type = (string)reader["type"],
+                    Abbreviation = (string)reader["abbreviation"]
+                };
+
+            }
+
+            return unit;
         }
 
         /// <summary>
@@ -167,7 +138,7 @@ namespace ClimateObservationsG21
             connection.Open();
 
             using var command = new NpgsqlCommand(statement, connection);
-           
+
             command.Parameters.AddWithValue("observerId", observer.Id);
             using var reader = command.ExecuteReader();
 
@@ -228,7 +199,7 @@ namespace ClimateObservationsG21
             connection.Open();
 
             using var command = new NpgsqlCommand(statement, connection);
-            
+
             command.Parameters.AddWithValue("observationId", observation.Id);
             using var reader = command.ExecuteReader();
 
@@ -242,7 +213,7 @@ namespace ClimateObservationsG21
                 {
                     Id = (int)reader["id"],
                     Value = Convert.IsDBNull(reader["value"]) ? null : Convert.ToSingle(reader["value"]), //Ta reda på varför convert to single
-                    CategoryID = (int)reader["category_id"],
+                    CategoryId = (int)reader["category_id"],
                     ObservationId = (int)reader["observation_id"]
                 };
                 listOfMeasurements.Add(measurement);
@@ -251,16 +222,48 @@ namespace ClimateObservationsG21
             return listOfMeasurements;
         }
 
-        public List<Category> GetListOfCategories(Measurement measurement)
+        public List<Category> GetListOfSubCategories(Category selectedCategory)
         {
-            string statement = "select * from category WHERE id = @categoryId";
+            string statement = "select category.id as \"cId\", category.name as \"cName\", category.unit_id as \"uId\" from category WHERE category.basecategory_id = @cId;";
+            using var connection = new NpgsqlConnection(connectionString);
+
+            connection.Open();
+
+            using var command = new NpgsqlCommand(statement, connection);
+
+
+
+            command.Parameters.AddWithValue("cId", selectedCategory.Id);
+            using var reader = command.ExecuteReader();
+            var listOfCategories = new List<Category>();
+
+            Category category = null;
+            while (reader.Read())
+            {
+                category = new Category
+                {
+                    Id = (int)reader["cId"],
+                    Name = Convert.IsDBNull(reader["cName"]) ? null : (string?)reader["cName"],
+                    UnitId = Convert.IsDBNull(reader["uId"]) ? null : (int?)reader["uId"]
+
+                };
+
+                listOfCategories.Add(category);
+            }
+
+            return listOfCategories;
+        }
+
+        public List<Category> GetListOfBaseCategories()
+        {
+            string statement = "select category.id as \"cId\", category.name as \"cName\" from category WHERE category.basecategory_id is null;";
             using var connection = new NpgsqlConnection(connectionString);
 
             connection.Open();
             Category category = null;
             using var command = new NpgsqlCommand(statement, connection);
-            
-            command.Parameters.AddWithValue("categoryId", measurement.CategoryID);
+
+
             using var reader = command.ExecuteReader();
             var listOfCategories = new List<Category>();
 
@@ -268,10 +271,8 @@ namespace ClimateObservationsG21
             {
                 category = new Category
                 {
-                    Id = (int)reader["id"],
-                    Name = Convert.IsDBNull(reader["name"]) ? null : (string?)reader["name"],
-                    BaseCategoryId = Convert.IsDBNull(reader["basecategory_id"]) ? null : (int?)reader["basecategory_id"],
-                    UnitId = Convert.IsDBNull(reader["unit_id"]) ? null : (int?)reader["unit_id"]
+                    Id = (int)reader["cId"],
+                    Name = Convert.IsDBNull(reader["cName"]) ? null : (string?)reader["cName"]
                 };
                 listOfCategories.Add(category);
             }
@@ -279,132 +280,114 @@ namespace ClimateObservationsG21
             return listOfCategories;
         }
 
-        public List<Unit> GetListOfUnits(Category category)
+        public List<Country> GetListOfCountries()
         {
-            string statement = "select * from unit WHERE id = @unitId";
+            string statement = "select * from country";
             using var connection = new NpgsqlConnection(connectionString);
 
             connection.Open();
-            
+
             using var command = new NpgsqlCommand(statement, connection);
-            
-            command.Parameters.AddWithValue("unitId", category.UnitId);
+
             using var reader = command.ExecuteReader();
-            var listOfUnits = new List<Unit>();
-            Unit unit = null;
+
+
+            var listOfCountries = new List<Country>();
+
+            Country country = null;
 
             while (reader.Read())
             {
-                unit = new Unit
+                country = new Country
                 {
                     Id = (int)reader["id"],
-                    Type = (string)reader["type"],
-                    Abbreviation = (string)reader["abbreviation"]
+                    Name = (string)reader["name"]
+
                 };
-                listOfUnits.Add(unit);
+
+                listOfCountries.Add(country);
             }
 
-            return listOfUnits;
+            return listOfCountries;
         }
 
-
-        public void GetInfoAboutObservation(Observation observation)
+        public List<Area> GetListOfArea(Country country)
         {
-
-            string statement = "SELECT measurement.observation_id, category.name, measurement.value, unit.abbreviation" +
-                "FROM measurement " +
-                "INNER JOIN category " +
-                "ON measurement.category_id = category.id " +
-                "INNER JOIN unit " +
-                "ON category.unit_id = unit.id " +
-                "INNER JOIN observation " +
-                "ON measurement.observation_id = observation.id " +
-                "WHERE observation_id = @observationId;";
-
-
+            string statement = "SELECT area.id as \"aId\", area.name as \"name\", area.country_id as \"countryId\" from area INNER JOIN country ON country_id = country.id WHERE country.id = @cId";
             using var connection = new NpgsqlConnection(connectionString);
 
             connection.Open();
+
             using var command = new NpgsqlCommand(statement, connection);
 
-            command.Parameters.AddWithValue("observationId", observation.Id);
-            command.ExecuteReader();
+            command.Parameters.AddWithValue("cId", country.Id);
+            using var reader = command.ExecuteReader();
 
 
+            var listOfAreas = new List<Area>();
 
-            
+            Area area = null;
 
-            return // listor med respektive objekt? category.Name, unit.Abbreviation, measurement.Value
+            while (reader.Read())
+            {
+                area = new Area
+                {
+                    Id = (int)reader["aId"],
+                    Name = (string)reader["name"],
+                    CountryId = (int)reader["countryId"],
+                    Country = country
+                };
 
+                listOfAreas.Add(area);
+            }
 
+            return listOfAreas;
         }
 
         #endregion
 
 
+        public int UpdateMeasurementWithTransaction(Measurement measurement)
+        {
+
+            string statement = "UPDATE measurement SET VALUE = @mValue WHERE id = @mId";
+            int result = 0;
+
+            using var connection = new NpgsqlConnection(connectionString);
+            connection.Open();
+            var transaction = connection.BeginTransaction();
+
+            try
+            {
+                using var command = new NpgsqlCommand(statement, connection);
 
 
-        //public void GetMultiAnswer(Observation observation)
-        //{
-        //string statement = "SELECT measurement.observation_id, category.name, measurement.value, unit.abbreviation" +
-        //        "FROM measurement " +
-        //        "INNER JOIN category " +
-        //        "ON measurement.category_id = category.id " +
-        //        "INNER JOIN unit " +
-        //        "ON category.unit_id = unit.id " +
-        //        "INNER JOIN observation " +
-        //        "ON measurement.observation_id = observation.id " +
-        //        "WHERE observation_id = @observationId;";
+
+                command.Parameters.AddWithValue("mValue", measurement.Value);
+                command.Parameters.AddWithValue("mId", measurement.Id);
+
+                result += command.ExecuteNonQuery();
+
+                
+                transaction.Commit(); //bekräfatr att det gått bra typ
+
+                return result;
+            }
 
 
-        //    using var connection = new NpgsqlConnection(connectionString);
-
-        //    connection.Open();
-
-        //    using var command = new NpgsqlCommand(statement, connection);
-
-        //    command.Parameters.AddWithValue("observationId", observation.Id);
-        //    using var reader = command.ExecuteReader();
-
-        //    List<Measurement> measurements = null;
-        //    List<Category> categories = null;
-        //    List<Unit> units = null;
+            catch (PostgresException ex)
+            {
+                transaction.Rollback();
+                string errorCode = ex.SqlState;
+                throw new Exception("Uppdateringen misslyckades", ex);
 
 
-        //    while (reader.Read())
-        //    {
+            }
 
-        //        measurement = new Measurement
-        //        {
-        //            Id = (int)reader["id"],
-        //            Value = Convert.IsDBNull(reader["value"]) ? null : Convert.ToSingle(reader["value"]), //Ta reda på varför convert to single
-        //            CategoryID = (int)reader["category_id"],
-        //            ObservationId = (int)reader["observation_id"]
-        //        };
-        //        listOfMeasurements.Add(measurement);
-        //    }
 
-        //    return listOfMeasurements;
+        }
 
-        //}
 
-        /*
-         * SELECT measurement.observation_id, category.name, measurement.value, unit.abbreviation
-           FROM measurement
-
-           INNER JOIN category
-           ON measurement.category_id = category.id
-            
-           INNER JOIN unit
-           ON category.unit_id = unit.id
-            
-           INNER JOIN observation
-           on measurement.observation_id = observation.id
-           WHERE observation_id = 20;
-         
-        obs!! "20" ÄR HÅRDKODAT!    
-
-        */
 
         #region Add and Remove Methods
 
@@ -425,50 +408,19 @@ namespace ClimateObservationsG21
                 command.Parameters.AddWithValue("firstname", firstName ?? Convert.DBNull);
                 command.Parameters.AddWithValue("lastname", lastName ?? Convert.DBNull);
                 Observer observer = null;
-                using var reader = command.ExecuteReader();
 
-                //while (reader.Read())
-                //{
-                //    observer.Id = (int)reader["id"];
-                //}
+
+
+                observer = new Observer
+                {
+                    Id = (int)command.ExecuteScalar(),
+                    FirstName = firstName,
+                    LastName = lastName
+                };
+
+
 
                 return observer;
-            }
-            catch (PostgresException ex)
-            {
-
-                throw new Exception("Du måste ange både för- och efternamn", ex);
-            }
-        }
-
-        /// <summary>
-        /// Adds observation to database
-        /// </summary>
-        /// <param name="observation"></param>
-        /// <returns>observation</returns>
-        public Observation AddObservation(Observation observation)
-        {
-
-
-            string statement = "insert into observation(observer_id, geolocation_id) values (@observer, @geolocation)";
-            try
-            {
-
-                using var connection = new NpgsqlConnection(connectionString);
-                connection.Open();
-                using var command = new NpgsqlCommand(statement, connection);
-
-                command.Parameters.AddWithValue("observer", observation.ObserverId);
-                command.Parameters.AddWithValue("geolocation", observation.GeolocationId);
-
-                using var reader = command.ExecuteReader();
-
-                //while (reader.Read())
-                //{
-                //    observation.Id = (int)reader["id"];
-                //}
-
-                return observation;
             }
             catch (PostgresException ex)
             {
@@ -482,31 +434,100 @@ namespace ClimateObservationsG21
         /// </summary>
         /// <param name="measurement"></param>
         /// <returns>measurement</returns>
-        public Measurement AddMeasurement(Measurement measurement)
+        public void AddMeasurement(Measurement measurement, int id)
         {
+
+            string statement = "INSERT INTO measurement (value, observation_id, category_id) VALUES(@value, @oid, @cid) returning id";
+
+            using var connection = new NpgsqlConnection(connectionString);
+            connection.Open();
+
+            using var command = new NpgsqlCommand(statement, connection);
+
+
+
+            command.Parameters.AddWithValue("value", measurement.Value);
+            command.Parameters.AddWithValue("oid", id);
+            command.Parameters.AddWithValue("cid", measurement.CategoryId);
+
+
+            command.ExecuteNonQuery();
+
+
+
+
+
+
+            //int i = 0;
+
+            //foreach (var m in vm.Measurements)
+            //{
+
+
+            //    command.Parameters.AddWithValue("value", vm.Measurements[i].Value);
+            //    command.Parameters.AddWithValue("oid", id);
+            //    command.Parameters.AddWithValue("cid", vm.Measurements[i].CategoryId);
+
+            //    i++;
+
+
+            //}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
             // inputValue kommer från värdet användaren skriver in, inputCategory kommer från värdet användaren väljer, observationId kommer när en observation skapas
 
             // Skicka in datan i databasen, returner measurement och sedan presentera
 
-            string statement = "INSERT INTO measurement(value, category_id, observation_id) VALUES (@inputValue, @inputCategory, @observationId)";
 
-            // insert into measurement(value, observation_id, category) values (@inputValue, @observationId, @inputCategory)
 
-            using var connection = new NpgsqlConnection(connectionString);
 
-            connection.Open();
 
-            using var command = new NpgsqlCommand(statement, connection);
 
-            // 
-            command.Parameters.AddWithValue("inputValue", measurement.Value ?? Convert.DBNull);
-            command.Parameters.AddWithValue("inputCategory", measurement.CategoryID);
-            command.Parameters.AddWithValue("observationId", measurement.ObservationId);
 
-            using var reader = command.ExecuteReader();
 
-            return measurement;
+
+            //string statement = "INSERT INTO measurement(value, category_id, observation_id) VALUES (@inputValue, @inputCategory, @observationId)";
+
+            //// insert into measurement(value, observation_id, category) values (@inputValue, @observationId, @inputCategory)
+
+            //using var connection = new NpgsqlConnection(connectionString);
+
+            //connection.Open();
+
+            //using var command = new NpgsqlCommand(statement, connection);
+
+            //// 
+            //command.Parameters.AddWithValue("inputValue", measurement.Value ?? Convert.DBNull);
+            //command.Parameters.AddWithValue("inputCategory", measurement.CategoryId);
+            //command.Parameters.AddWithValue("observationId", measurement.ObservationId);
+
+            //using var reader = command.ExecuteReader();
+
+            //return measurement;
         }
 
         /// <summary>
@@ -532,8 +553,8 @@ namespace ClimateObservationsG21
             }
             catch (PostgresException ex)
             {
-
-                throw new Exception("Du kan inte ta bort en observatör som har gjort en observation");
+                string errorCode = ex.SqlState;
+                throw new Exception("Du kan inte ta bort en observatör som har gjort en observation", ex);
             }
         }
 

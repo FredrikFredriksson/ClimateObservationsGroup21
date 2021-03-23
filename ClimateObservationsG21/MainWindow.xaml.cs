@@ -24,18 +24,32 @@ namespace ClimateObservationsG21
     public partial class MainWindow : Window
     {
 
+        NewObservationViewModel vm = new NewObservationViewModel();
         ClimateObservations co = new ClimateObservations();
-        List<Observer> listOfObservers = new List<Observer>();
 
+        List<Observer> listOfObservers = new List<Observer>();
+        List<Country> listOfCountries = new List<Country>();
         List<Observation> listOfObservations = new List<Observation>();
+
+        Category mainCategory = new Category();
+        Category subCategory = new Category();
+        Category sub2Category = new Category();
+
+        Observer observer = new Observer();
+        
+        
 
         public MainWindow()
         {
             InitializeComponent();
 
             listOfObservers = co.GetListOfObservers();            
-            lstboxObservers.ItemsSource = listOfObservers;
+            comboboxObserver.ItemsSource = listOfObservers;
+            comboboxCountry.ItemsSource = co.GetListOfCountries();
+            comboboxCategory.ItemsSource = co.GetListOfBaseCategories();
+
             
+
         }
 
         private void btnAddObserver_Click(object sender, RoutedEventArgs e)
@@ -45,65 +59,210 @@ namespace ClimateObservationsG21
 
             co.AddObserver(firstName, lastName);
 
-            lstboxObservers.ItemsSource = null;
-            lstboxObservers.ItemsSource = co.GetListOfObservers();
+            comboboxObserver.ItemsSource = null;
+            comboboxObserver.ItemsSource = co.GetListOfObservers();
         }
 
         private void btnRemoveObserver_Click(object sender, RoutedEventArgs e)
         {
-            Observer observer = lstboxObservers.SelectedItem as Observer;
+            try //lagt till, återstår att testa om det fungerar med try catch
+            {
+                Observer observer = comboboxObserver.SelectedItem as Observer;
 
-            co.RemoveObserver(observer);
+                co.RemoveObserver(observer);
 
-            lstboxObservers.ItemsSource = null;
-            lstboxObservers.ItemsSource = co.GetListOfObservers();
+                comboboxObserver.ItemsSource = null;
+                comboboxObserver.ItemsSource = co.GetListOfObservers();                
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+
+            }
+            
                     
         }
 
         private void lstboxObservers_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            Observer observer = lstboxObservers.SelectedItem as Observer;
 
-
+            observer = comboboxObserver.SelectedItem as Observer;
             lstboxObservations.ItemsSource = co.GetListObservations(observer);
+
+
+            //Observer observer = lstboxObservers.SelectedItem as Observer;
+
+
+            //lstboxObservations.ItemsSource = co.GetListObservations(observer);
             
+        }
+
+        private void btnAddObservation_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void btnSaveToObservation_Click(object sender, RoutedEventArgs e)
+        {
+
+            vm.Observer = comboboxObserver.SelectedItem as Observer;
+            vm.GeolocationId = 1;
+            vm.Date = DateTime.Now;
+            
+
+            co.AddViewModelToDatabase(vm);
+            
+        }
+
+        private void comboboxCountry_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            Country country = comboboxCountry.SelectedItem as Country;
+
+            comboboxArea.ItemsSource = co.GetListOfArea(country);
+
+        }
+
+        private void comboboxCategory_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            Category category = comboboxCategory.SelectedItem as Category;
+
+            comboboxSubCategory1.ItemsSource = null;
+            comboboxSubCategory1.ItemsSource = co.GetListOfSubCategories(category);
+        }
+
+        private void comboboxSubCategory1_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            Category category = comboboxSubCategory1.SelectedItem as Category;
+            comboboxSubCategory2.ItemsSource = co.GetListOfSubCategories(category);
+            lblUnit.Content = co.GetUnit(category);
+        }
+
+        private void btnShowInfoObservation_Click(object sender, RoutedEventArgs e)
+        {
+            NewObservationViewModel vm = new NewObservationViewModel();
+
+            
+
         }
 
         private void lstboxObservations_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             Observation observation = lstboxObservations.SelectedItem as Observation;
-           
 
-            lstBoxListOfMeasurements.ItemsSource = null;
-            lstBoxListOfMeasurements.ItemsSource = co.GetListOfMeasurements(observation);
+            vm = co.GetViewModel(observation);
+
+            listboxMeasurements.ItemsSource = vm.Measurements; 
         }
 
-        private void lstBoxListOfMeasurements_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void comboboxObserver_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            Measurement measurement = lstBoxListOfMeasurements.SelectedItem as Measurement;
+            observer = comboboxObserver.SelectedItem as Observer;
+            lstboxObservations.ItemsSource = co.GetListObservations(observer);
 
-            lstBoxCategory.ItemsSource = null;
-            lstBoxCategory.ItemsSource = co.GetListOfCategories(measurement);
+        }
+
+        
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            mainCategory = comboboxCategory.SelectedItem as Category;
+            subCategory = comboboxSubCategory1.SelectedItem as Category;
+            sub2Category = comboboxSubCategory2.SelectedItem as Category;
+            int value = int.Parse(txtValue.Text);
+
+            Measurement measurement = new Measurement
+            {
+                Value = value,
+                CategoryId = subCategory.Id
+            };
+
+            vm.Measurements.Add(measurement);
+
+        }
+
+        private void buttonChangeValue_Click(object sender, RoutedEventArgs e)
+        {
+
             
+
+            Measurement measurement = listboxMeasurements.SelectedItem as Measurement;
+
+            measurement.Value = int.Parse(txtChangeValue.Text);
+
+            int i = co.UpdateMeasurementWithTransaction(measurement);
+
+            MessageBox.Show($"{i} antal rader påverkade");
         }
 
-        private void lstBoxCategory_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-
-            Category category = lstBoxCategory.SelectedItem as Category;
-
-            lstBoxUnit.ItemsSource = co.GetListOfUnits(category);
-
-        }
 
 
+        
+
+
+        //private void lstboxObservations_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        //{
+        //    Observation observation = lstboxObservations.SelectedItem as Observation;
+
+
+        //    lstBoxListOfMeasurements.ItemsSource = null;
+        //    lstBoxListOfMeasurements.ItemsSource = co.GetListOfMeasurements(observation);
+        //}
+
+        //private void lstboxObservations_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        //{
+        //    Observation observation = lstboxObservations.SelectedItem as Observation;
+
+        //    //var listMeasurement = co.GetListOfMeasurements(3);
+        //    //var category = co.GetListOfCategories(listMeasurement[0]);
+
+
+        //    //lblTest.Content = listMeasurement[0];
+        //    //lblTest2.Content = category[0];
 
 
 
+        //    ///lblTest3.Content = co.GetUnit(category[0].UnitId);
+        //}
+
+        //private void btnShowInfoObservation_Click(object sender, RoutedEventArgs e)
+        //{
+
+        //    //NewObservationViewModel vm = new NewObservationViewModel();
+        //    //använd index där index = selected value
+
+        //    NewObservationViewModel vm = new NewObservationViewModel();
 
 
+        //    Observation observation = lstboxObservations.SelectedItem as Observation;
 
 
+        //    vm = co.GetViewModel(observation);
+
+        //    lstBoxListOfMeasurements.ItemsSource = vm.Measurements;
+
+
+        //    lblTest.Content = vm.Measurements[0].Category.Name; 
+
+
+        //    ///lstBoxListOfMeasurements.ItemsSource = $"{vm.Measurements[0].Observation.Date} {vm.Measurements[0].Value} {vm.Measurements[0].Category.Unit.Abbreviation} {vm.Measurements[0].Category.Name}";
+        //}
+
+        //private void lstBoxListOfMeasurements_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        //{
+        //    Measurement measurement = lstBoxListOfMeasurements.SelectedItem as Measurement;
+
+        //    lstBoxCategory.ItemsSource = null;
+        //    lstBoxCategory.ItemsSource = co.GetListOfCategories(measurement);
+
+        //}
+
+        //private void lstBoxCategory_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        //{
+
+        //    Category category = lstBoxCategory.SelectedItem as Category;
+
+        //    lstBoxUnit.ItemsSource = co.GetListOfUnits(category);
+
+        //}
 
 
 
@@ -180,15 +339,6 @@ namespace ClimateObservationsG21
 
         ////lstBox.ItemsSource = observers;
 
-        /*
-               peak = new Peak
-               {
-                   PeakName = "Aconcagua",
-                   RangeId = 1
-               };//inget peakid här för att vi behöver låta db bestämma detta ju
-
-               peak = db.AddPeak(peak);//FUNKADE! Lillsjöhögen är med!
-               */
 
 
     }
