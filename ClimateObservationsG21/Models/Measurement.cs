@@ -15,10 +15,12 @@ namespace ClimateObservationsG21
         public int ObservationId { get; set; }
         public Observation Observation { get; set; }
         
+        
 
         public override string ToString()
         {
-            return $"{Value} {Category.Unit.Abbreviation} {Category.Name}";
+            return $"{Value} {Category.Unit.Abbreviation} {Category.Name} {Category.SubCategory}";
         }
+        //{Category.Unit.Abbreviation} 
     }
 }

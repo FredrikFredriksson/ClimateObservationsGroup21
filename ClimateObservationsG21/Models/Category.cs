@@ -14,13 +14,16 @@ namespace ClimateObservationsG21
 
         public int? BaseCategoryId { get; set; }
 
+        public Category SubCategory { get; set; }
+
         public int? UnitId { get; set; }
+
         public Unit Unit { get; set; }
 
 
         public override string ToString()
         {
-            return Name;
+            return $"{Name}";
         }
     }
 }

@@ -12,6 +12,8 @@ namespace ClimateObservationsG21
         public string FirstName { get; set; }
         public string LastName { get; set; }
 
+        // Går det kanske lägga in List<Observation> Observations = new List<Observation> här?  
+
 
         public override string ToString()
         {
