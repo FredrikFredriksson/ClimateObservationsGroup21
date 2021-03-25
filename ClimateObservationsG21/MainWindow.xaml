@@ -37,12 +37,12 @@
         <Button x:Name="buttonChangeValue" Content="Ändra värdet och spara" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="1603,821,0,0" VerticalAlignment="Top" Click="buttonChangeValue_Click" Width="162"/>
         <TextBlock FontSize="40" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="804,65,0,0" Text="KLIMATOBSERVATIONER" TextWrapping="Wrap" VerticalAlignment="Top" FontFamily="Open Sans" Height="38" Width="460"/>
         <Label FontSize="15" Content="Lägg till en ny observatör" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="776,264,0,0" VerticalAlignment="Top" Width="192"/>
-        <Label x:Name="lblRegisterNewObservation" FontSize="20" Content="Registrera en ny observation" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="48,38,0,0" VerticalAlignment="Top" Width="426"/>
+        <Label x:Name="lblRegisterNewObservation" FontSize="20" Content="Registrera en ny observation" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="20,38,0,0" VerticalAlignment="Top" Width="621"/>
         <ListBox x:Name="listBoxAddedMeasurements" Grid.ColumnSpan="2" Margin="20,580,1488,53"/>
         <Label Content="Tillagda mätpunkter" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="216,549,0,0" VerticalAlignment="Top" Width="126"/>
-        <Label x:Name="lblObservationInfo" FontSize="20" Content="Observationen gjordes" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="927,491,0,0" VerticalAlignment="Top" Width="838"/>
+        <Label x:Name="lblObservationInfo" FontSize="20" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="927,491,0,0" VerticalAlignment="Top" Width="838"/>
         <Label Content="Upptäckter under observationen" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="1140,541,0,0" VerticalAlignment="Top" Width="188"/>
-        <Label Content="Ändra värdet på den valda upptäckten" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="1603,758,0,0" VerticalAlignment="Top" Width="224"/>
+        <Label Content="Ange nytt värde för den valda upptäckten" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="1603,758,0,0" VerticalAlignment="Top" Width="253"/>
         <Label x:Name="lblBasecategory" Content="Välj huvudkategori" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="53,360,0,0" VerticalAlignment="Top" Width="126"/>
         <Label x:Name="lblUnit" Content="" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="396,393,0,0" VerticalAlignment="Top"/>
         <Calendar x:Name="Calendar" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="279,124,0,0" VerticalAlignment="Top" SelectedDatesChanged="Calendar_SelectedDatesChanged"/>

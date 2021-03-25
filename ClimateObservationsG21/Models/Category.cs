@@ -14,7 +14,7 @@ namespace ClimateObservationsG21
 
         public int? BaseCategoryId { get; set; }
 
-        public Category SubCategory { get; set; }
+        public Category BaseCategory { get; set; }
 
         public int? UnitId { get; set; }
 

@@ -19,7 +19,7 @@ namespace ClimateObservationsG21
 
         public override string ToString()
         {
-            return $"{Value} {Category.Unit.Abbreviation} {Category.Name} {Category.SubCategory}";
+            return $"{Value} {Category.Unit.Abbreviation} {Category.Name} {Category.BaseCategory}";
         }
         //{Category.Unit.Abbreviation} 
     }
