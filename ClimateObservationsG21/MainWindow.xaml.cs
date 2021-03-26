@@ -24,7 +24,6 @@ namespace ClimateObservationsG21
 
         ClimateObservations co;
         NewObservationViewModel vm;
-        
 
         public MainWindow()
         {
@@ -32,8 +31,9 @@ namespace ClimateObservationsG21
 
             vm = new NewObservationViewModel();
             co = new ClimateObservations();
-            comboboxObserver.ItemsSource = co.GetListOfObservers(); 
+            comboboxObserver.ItemsSource = co.GetListOfObservers();
             comboboxBasecategory.ItemsSource = co.GetListOfBaseCategories();
+            comboboxGeolocation.ItemsSource = co.GetListOfGeolocations();
         }
 
         #region private methods
@@ -48,27 +48,20 @@ namespace ClimateObservationsG21
 
         private void UpdateView(NewObservationViewModel vm, Observation observation)
         {
-            try
-            {
-                lstboxObservations.ItemsSource = co.GetListObservations(vm.Observer);
-                comboboxObserver.SelectedItem = vm.Observer;
-                lblObservationInfo.Content = $"Observationen gjordes {vm.Date?.ToString("yyyy-MM-dd")} av {vm.Observer.FirstName} {vm.Observer.LastName}";
-                lstboxObservations.ItemsSource = null;
-                lstboxObservations.ItemsSource = co.GetListObservations(vm.Observer);
-                lstboxObservations.SelectedItem = observation;
-                listboxMeasurements.ItemsSource = null;
-                listboxMeasurements.ItemsSource = vm.Measurements;
-                listBoxAddedMeasurements.ItemsSource = null;
-                lblRegisterNewObservation.Content = null;
-                lblRegisterNewObservation.Content = $"Registrera en ny observation för {vm.Observer}";
-                lblUnit.Content = null;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
+            lstboxObservations.ItemsSource = co.GetListObservations(vm.Observer);
+            comboboxObserver.SelectedItem = vm.Observer;
+            lblObservationInfo.Content = $"Observation {vm.Geolocation.Area.Name}, {vm.Geolocation.Area.Country.Name} gjordes {vm.Date?.ToString("yyyy-MM-dd")} av {vm.Observer.FirstName} {vm.Observer.LastName}";
+            lstboxObservations.ItemsSource = null;
+            lstboxObservations.ItemsSource = co.GetListObservations(vm.Observer);
+            lstboxObservations.SelectedItem = observation;
+            listboxMeasurements.ItemsSource = null;
+            listboxMeasurements.ItemsSource = vm.Measurements;
+            listBoxAddedMeasurements.ItemsSource = null;
+            lblRegisterNewObservation.Content = null;
+            lblRegisterNewObservation.Content = $"Registrera en ny observation för {vm.Observer}";
+            lblUnit.Content = null;
         }
-        
+
         #endregion
 
         #region button click
@@ -100,11 +93,11 @@ namespace ClimateObservationsG21
 
         private void btnRemoveObserver_Click(object sender, RoutedEventArgs e)
         {
-            try 
+            try
             {
                 co.RemoveObserver(vm.Observer);
                 comboboxObserver.ItemsSource = null;
-                comboboxObserver.ItemsSource = co.GetListOfObservers();                
+                comboboxObserver.ItemsSource = co.GetListOfObservers();
             }
             catch (Exception ex)
             {
@@ -114,17 +107,10 @@ namespace ClimateObservationsG21
 
         private void btnSaveToObservation_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                vm.GeolocationId = 1;
-                vm.Date = Calendar.SelectedDate;
-                UpdateView(vm, co.AddViewModelToDatabase(vm));
-                listBoxAddedMeasurements.ItemsSource = null;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
+            vm.Geolocation = comboboxGeolocation.SelectedItem as Geolocation;
+            vm.Date = Calendar.SelectedDate;
+            UpdateView(vm, co.AddViewModel(vm));
+            listBoxAddedMeasurements.ItemsSource = null;
         }
 
         private void buttonChangeValue_Click(object sender, RoutedEventArgs e)
@@ -135,7 +121,7 @@ namespace ClimateObservationsG21
                 Observation observation = lstboxObservations.SelectedItem as Observation;
                 measurement.Value = int.Parse(txtChangeValue.Text);
                 int i = co.UpdateMeasurementWithTransaction(measurement);
-                MessageBox.Show($"{i} antal rader påverkade");
+                MessageBox.Show($"Värdet uppdaterat");
                 UpdateView(vm, observation);
             }
             catch (Exception ex)
@@ -144,38 +130,33 @@ namespace ClimateObservationsG21
             }
         }
 
-        // FIXA DENNA
+        // Mycket kod här under. Vet inte hur vi kan lösa det något annat sätt. 
         private void buttonAddMeasurement_Click(object sender, RoutedEventArgs e)
         {
-            try
+            Category category = new Category();
+            Category baseCategory = new Category();
+            int value = int.Parse(txtValue.Text);
+
+            if (comboboxSubCategory2.SelectedItem != null)
             {
-                Category category = new Category();
-                int value = int.Parse(txtValue.Text);
-                if (comboboxSubCategory2.SelectedItem != null)
-                {
-                    category = comboboxSubCategory2.SelectedItem as Category;
-                    category.BaseCategory = comboboxSubcategory1.SelectedItem as Category;
-                }
-                else
-                {
-                    category = comboboxSubcategory1.SelectedItem as Category;
-                }
-                category.Unit = co.GetUnit(category);
-                Measurement measurement = new Measurement
-                {
-                    Value = value,
-                    Category = category,
-                    CategoryId = category.Id,
-                };
-                vm.Measurements.Add(measurement);
-                listBoxAddedMeasurements.ItemsSource = null;
-                listBoxAddedMeasurements.ItemsSource = vm.Measurements;
-                txtValue.Text = null;
+                category = comboboxSubCategory2.SelectedItem as Category;
+                baseCategory = comboboxSubcategory1.SelectedItem as Category;
             }
-            catch (Exception ex)
+            else
             {
-                MessageBox.Show(ex.Message);
+                category = comboboxSubcategory1.SelectedItem as Category;
+                baseCategory = comboboxBasecategory.SelectedItem as Category;
             }
+            category.BaseCategory = baseCategory;
+            Measurement measurement = new Measurement
+            {
+                Value = value,
+                Category = category
+            };
+            vm.Measurements.Add(measurement);
+            listBoxAddedMeasurements.ItemsSource = null;
+            listBoxAddedMeasurements.ItemsSource = vm.Measurements;
+            txtValue.Text = null;
         }
 
         #endregion
@@ -194,23 +175,27 @@ namespace ClimateObservationsG21
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex .Message);
+                MessageBox.Show(ex.Message);
             }
         }
 
         private void comboboxObserver_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             vm.Observer = comboboxObserver.SelectedItem as Observer;
-
             lstboxObservations.ItemsSource = null;
             listboxMeasurements.ItemsSource = null;
-
-            if (vm.Observer != null)
+            try
             {
-                lstboxObservations.ItemsSource = co.GetListObservations(vm.Observer);
+                if (vm.Observer != null)
+                {
+                    lstboxObservations.ItemsSource = co.GetListObservations(vm.Observer);
+                }
+                UpdateTextFields();
             }
-
-            UpdateTextFields();
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
 
         private void comboboxBasecategory_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -238,7 +223,7 @@ namespace ClimateObservationsG21
                 if (category != null)
                 {
                     comboboxSubCategory2.ItemsSource = co.GetListOfSubCategories(category);
-                    lblUnit.Content = co.GetUnit(category);
+                    lblUnit.Content = category.Unit;
                 }
             }
             catch (Exception ex)
@@ -246,11 +231,13 @@ namespace ClimateObservationsG21
                 MessageBox.Show(ex.Message);
             }
         }
+
         private void Calendar_SelectedDatesChanged(object sender, SelectionChangedEventArgs e)
         {
             vm.Measurements.Clear();
             listBoxAddedMeasurements.ItemsSource = null;
         }
         #endregion
+
     }
 }

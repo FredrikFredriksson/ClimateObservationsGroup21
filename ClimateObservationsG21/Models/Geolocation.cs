@@ -11,7 +11,11 @@ namespace ClimateObservationsG21
         public int Id { get; set; }
         public float? Lattitude { get; set; }
         public float? Longitude { get; set; }
-        public int AreaId { get; set; }
         public Area Area { get; set; }
+
+        public override string ToString()
+        {
+            return $"{Area.Name}, {Area.Country.Name}";
+        }
     }
 }

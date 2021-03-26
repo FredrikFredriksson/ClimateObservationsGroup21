@@ -15,11 +15,11 @@ namespace ClimateObservationsG21
 
         public DateTime? Date { get; set; } // Använder DateTime? för att kunna hämta datumet från kalender i gränssnittet. Den returnerar DateTime?. 
 
-        public int GeolocationId { get; set; }
+        public Geolocation Geolocation { get; set; }
 
         public override string ToString()
         {
-            return Date?.ToString("yyyy-MM-dd");
+            return $"{Geolocation.Area} gjordes {Date?.ToString("yyyy-MM-dd")}";
         }
 
         //Lägg till public Geolocation Geolocation { get; set; } om vi hinner, gör då om metoden GetViewModel()
